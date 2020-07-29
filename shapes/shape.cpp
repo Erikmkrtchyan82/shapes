@@ -2,14 +2,44 @@
 #include <vector>
 #include <stdexcept>
 #include <numbers>
+#include <cmath>
+#include <algorithm>
+#include <memory>
 #include "shape.h"
 
-
+// Unnamed namespace for helper functions
+// and some structs for returning object's arguments from functions.
+// In functions `begin` and `end` variables using for finding parameters from string.
+// `begin` points one past the first white space after shape identifier.
 namespace {
+
+	// Convertin argument's string representation to double with error handling.
 	double convert( std::string& str ) {
 		try {
-			double coord;
-			coord = std::stod( str );
+
+			{
+				size_t dot_count = 0, minus_count = 0;
+
+				for ( char c : str ) {
+					if ( std::ispunct( c ) && c == '.' ) {
+						++dot_count;
+						if ( dot_count > 1 )
+							throw std::exception();
+						continue;
+					}
+					if ( std::ispunct( c ) && c == '-' ) {
+						++minus_count;
+						if ( minus_count > 1 )
+							throw std::exception();
+						continue;
+					}
+					if ( !std::isdigit( c ) )
+						throw std::exception();
+				}
+			}
+
+			double coord = std::stod( str );
+
 			return coord;
 		}
 		catch ( ... ) {
@@ -48,16 +78,17 @@ namespace {
 	point_arguments convert_point_argument( std::string& shape_str ) {
 		std::vector<std::string> param;
 
-		size_t n1 = shape_str.find( ' ' ) + 1, n2 = 0;
+		size_t begin = shape_str.find( ' ' ) + 1, end = 0;
 
 		while ( true ) {
-			n2 = shape_str.find( ' ', n1 );
-			param.push_back( shape_str.substr( n1, ( n2 - n1 ) ) );
-			if ( n2 > shape_str.size() )
+			end = shape_str.find( ' ', begin );
+			param.push_back( shape_str.substr( begin, ( end - begin ) ) );
+			if ( end > shape_str.size() )
 				break;
-			n1 = n2 + 1;
+			begin = end + 1;
 		}
 
+		// if parameters for `Point` is not equal 2 throws exception
 		if ( param.size() != 2 ) {
 			throw std::invalid_argument( "Wrong number of parameters for shape identifier P\n" );
 		}
@@ -68,16 +99,17 @@ namespace {
 	circle_arguments convert_circle_argument( std::string& shape_str ) {
 		std::vector<std::string> param;
 
-		size_t n1 = shape_str.find( ' ' ) + 1, n2 = 0;
+		size_t begin = shape_str.find( ' ' ) + 1, end = 0;
 
 		while ( true ) {
-			n2 = shape_str.find( ' ', n1 );
-			param.push_back( shape_str.substr( n1, ( n2 - n1 ) ) );
-			if ( n2 > shape_str.size() )
+			end = shape_str.find( ' ', begin );
+			param.push_back( shape_str.substr( begin, ( end - begin ) ) );
+			if ( end > shape_str.size() )
 				break;
-			n1 = n2 + 1;
+			begin = end + 1;
 		}
 
+		// if parameters for `Circle` is not equal 3 throws exception
 		if ( param.size() != 3 )
 			throw std::invalid_argument( "Wrong number of parameters for shape identifier C\n" );
 
@@ -87,43 +119,46 @@ namespace {
 	rectangle_argument convert_rectangle_argument( std::string& shape_str ) {
 		std::vector<std::string> param;
 
-		size_t n1 = shape_str.find( ' ' ) + 1, n2 = 0;
+		size_t begin = shape_str.find( ' ' ) + 1, end = 0;
 
 		while ( true ) {
-			n2 = shape_str.find( ' ', n1 );
-			param.push_back( shape_str.substr( n1, ( n2 - n1 ) ) );
-			if ( n2 > shape_str.size() )
+			end = shape_str.find( ' ', begin );
+			param.push_back( shape_str.substr( begin, ( end - begin ) ) );
+			if ( end > shape_str.size() )
 				break;
-			n1 = n2 + 1;
+			begin = end + 1;
 		}
 
+		// if parameters for `Rectangle` is not equal 4 throws exception
 		if ( param.size() != 4 )
 			throw std::invalid_argument( "Wrong number of parameters for shape identifier R\n" );
 
-		return { convert( param[ 0 ] ),convert( param[ 1 ] ), convert( param[ 2 ] ), convert( param[ 3 ] )
-		};
+		return { convert( param[ 0 ] ),convert( param[ 1 ] ), convert( param[ 2 ] ), convert( param[ 3 ] ) };
 	}
 
 	triangle_argument convert_triangle_argument( std::string& shape_str ) {
 		std::vector<std::string> param;
 
-		size_t n1 = shape_str.find( ' ' ) + 1, n2 = 0;
+		size_t begin = shape_str.find( ' ' ) + 1, end = 0;
 
 		while ( true ) {
-			n2 = shape_str.find( ' ', n1 );
-			param.push_back( shape_str.substr( n1, ( n2 - n1 ) ) );
-			if ( n2 > shape_str.size() )
+			end = shape_str.find( ' ', begin );
+			param.push_back( shape_str.substr( begin, ( end - begin ) ) );
+			if ( end > shape_str.size() )
 				break;
-			n1 = n2 + 1;
+			begin = end + 1;
 		}
 
+		// if parameters for `Triangle` is not equal 6 throws exception
 		if ( param.size() != 6 )
 			throw std::invalid_argument( "Wrong number of parameters for shape identifier T\n" );
 
-		return { convert( param[ 0 ] ),	convert( param[ 1 ] ),convert( param[ 2 ] ),convert( param[ 3 ] ),convert( param[ 4 ] ),convert( param[ 5 ] ) };
+		return { convert( param[ 0 ] ),	convert( param[ 1 ] ),
+			convert( param[ 2 ] ),convert( param[ 3 ] ),
+			convert( param[ 4 ] ),convert( param[ 5 ] ) };
 	}
 
-}
+}	// unnamed namespace
 
 namespace dynamic {
 
@@ -179,7 +214,7 @@ namespace dynamic {
 	}
 
 	void Circle::calculate_area() {
-		//	std::numbers::pi  since C++20
+		// std::numbers::pi  since C++20, defined in <numbers>
 		area_ = std::numbers::pi * pow( radius_, 2 );
 	}
 
@@ -204,6 +239,7 @@ namespace dynamic {
 			bottom_y_coord_ = temp.bottom_y_coord;
 		}
 
+		// if left-top corner's coordinates or right-bottom corner's coordinates are incorrect, throws exception
 		if ( left_x_coord_ >= right_x_coord_ || top_y_coord_ <= bottom_y_coord_ )
 			throw std::invalid_argument( "Invalid Rectangle shape\n" );
 
@@ -238,6 +274,7 @@ namespace dynamic {
 			y3_ = temp.y3;
 		}
 
+		// if all abscissas or ordinates are on the same line, throws exception
 		if ( ( x1_ == x2_ && x2_ == x3_ ) || ( y1_ == y2_ && y2_ == y3_ ) )
 			throw std::invalid_argument( "Invalid Triangle shape\n" );
 
@@ -266,7 +303,7 @@ namespace dynamic {
 			std::to_string( x3_ ) + ' ' +
 			std::to_string( y3_ ) + '\n';
 	}
-}
+} // dynamic namespace
 
 namespace semi_dynamic {
 
@@ -316,7 +353,7 @@ namespace semi_dynamic {
 	}
 
 	void Circle::calculate_area() {
-		//	std::numbers::pi  since C++20
+		// std::numbers::pi  since C++20, defined in <numbers>
 		area_ = std::numbers::pi * pow( radius_, 2 );
 	}
 
@@ -349,6 +386,7 @@ namespace semi_dynamic {
 			bottom_y_coord_ = temp.bottom_y_coord;
 		}
 
+		// same as above
 		if ( left_x_coord_ >= right_x_coord_ || top_y_coord_ <= bottom_y_coord_ )
 			throw std::invalid_argument( "Invalid Rectangle shape\n" );
 
@@ -391,6 +429,7 @@ namespace semi_dynamic {
 			y3_ = temp.y3;
 		}
 
+		// same as above
 		if ( ( x1_ == x2_ && x2_ == x3_ ) || ( y1_ == y2_ && y2_ == y3_ ) )
 			throw std::invalid_argument( "Invalid Triangle shape\n" );
 
@@ -428,5 +467,126 @@ namespace semi_dynamic {
 		return text_;
 	}
 
+} // semi_dynamic namespace
+
+std::string construct( std::vector<std::string> shapes_description, int polymorphism_mechanism ) {
+
+	std::string error_message( "Unrecognized shape identifier\n" );
+
+	if ( polymorphism_mechanism == 0 ) {
+		using shape_t = std::unique_ptr<dynamic::Shape>;
+
+		std::vector<shape_t> shapes;
+
+		for ( auto& shape_str : shapes_description ) {
+
+			// Get a string from shape_str's first character to the first white space,
+			// which will contain the shape identifier
+			auto shape_id = shape_str.substr( 0, shape_str.find( ' ' ) );
+
+			// If shape identifier is more than one symbol, returning error message
+			if ( shape_id.size() != 1 )
+				return  error_message;
+
+			switch ( shape_str[ 0 ] ) {
+			case 'R':
+				shapes.emplace_back( std::make_unique<dynamic::Rectangle>( shape_str ) );
+				break;
+			case 'C':
+				shapes.emplace_back( std::make_unique<dynamic::Circle>( shape_str ) );
+				break;
+			case 'P':
+				shapes.emplace_back( std::make_unique<dynamic::Point>( shape_str ) );
+				break;
+			case 'T':
+				shapes.emplace_back( std::make_unique<dynamic::Triangle>( shape_str ) );
+				break;
+			default:
+				return error_message;
+			}
+		}
+
+		std::sort( shapes.begin(), shapes.end(), []( shape_t& shape1, shape_t& shape2 ) {return shape1->get_area() < shape2->get_area(); } );
+
+		std::string str{};
+		std::for_each( shapes.begin(), shapes.end(), [&]( shape_t& sh ) {str += sh->get_string(); } );
+
+		return str;
+	}
+	else if ( polymorphism_mechanism == 1 ) {
+		using shape_t = semi_dynamic::shape_t;
+
+		std::vector<shape_t> shapes;
+
+		for ( auto& shape_str : shapes_description ) {
+
+			// Same as above
+			auto shape_id = shape_str.substr( 0, shape_str.find( ' ' ) );
+
+			if ( shape_id.size() != 1 )
+				return  error_message;
+
+			switch ( shape_str[ 0 ] ) {
+			case 'R':
+				shapes.emplace_back( semi_dynamic::shape_t( semi_dynamic::Rectangle( shape_str ) ) );
+				break;
+			case 'C':
+				shapes.emplace_back( semi_dynamic::shape_t( semi_dynamic::Circle( shape_str ) ) );
+				break;
+			case 'P':
+				shapes.emplace_back( semi_dynamic::shape_t( semi_dynamic::Point( shape_str ) ) );
+				break;
+			case 'T':
+				shapes.emplace_back( semi_dynamic::shape_t( semi_dynamic::Triangle( shape_str ) ) );
+				break;
+			default:
+				return error_message;
+			}
+		}
+
+		std::sort( shapes.begin(), shapes.end(), []( shape_t& a, shape_t& b ) {return a.get_area() < b.get_area(); } );
+
+		std::string str{};
+		std::for_each( shapes.begin(), shapes.end(), [&]( shape_t& sh ) {str += sh.get_string(); } );
+
+		return str;
+	}
+	else return "Unsupported polymorphism_mechanism value " + std::to_string( polymorphism_mechanism ) + '\n';
 }
 
+std::string sort_shape_areas( const std::string& in_shapes_str, int polymorphism_mechanism ){
+
+	// for all shapes descriptions
+	std::vector<std::string> shape_description;
+
+	// for finding new line symbols for deviding shapes
+	size_t begin = 0, end = 0;
+
+	while ( true ) {
+		end = in_shapes_str.find( '\n', begin );
+
+		// if there isn't new line then break
+		if ( end > in_shapes_str.size() )
+			break;
+
+		auto shape = in_shapes_str.substr( begin, ( end - begin ) );
+		// triming string
+		auto begin = shape.find_first_not_of( ' ' );
+		auto end = shape.find_last_not_of( ' ' );
+
+		shape_description.push_back( shape.substr( begin, end + 1 ) );
+
+		begin = end + 1;
+	}
+
+	try {
+		return construct( shape_description, polymorphism_mechanism );
+	}
+	catch ( std::exception& e ) {
+		return e.what();
+	}
+	catch ( ... ) {
+		return "Unexcepted error\n";
+	}
+
+}

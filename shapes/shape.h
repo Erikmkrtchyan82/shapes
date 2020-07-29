@@ -1,8 +1,10 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <variant>
 
+// Using virtual functions for dynamic polymorphism
 namespace dynamic {
 
 	class Shape {
@@ -66,8 +68,9 @@ namespace dynamic {
 		double x3_;
 		double y3_;
 	};
-}
+} // dynamic namespace
 
+// Using std::variant and std::visit for semi-dynamic polymorphism
 namespace semi_dynamic {
 
 	class Point {
@@ -136,25 +139,35 @@ namespace semi_dynamic {
 		std::string text_;
 	};
 
-
+	// class for wrapping geometric objects classes
 	class shape_t {
 	public:
-		shape_t( std::variant<Point, Rectangle, Circle, Triangle> ob ) :var( ob ) {}
+
+		shape_t( std::variant<Point, Rectangle, Circle, Triangle> ob ) :var_( ob ) {}
 
 		double get_area() {
-			//double area = 0;
-			return std::visit( []( auto& a )-> double {return a.get_area(); }, var );
-			//return area;
+			return std::visit( []( auto& a ) -> double {return a.get_area(); }, var_ );
 		}
 
 		std::string get_string() {
-			return std::visit( []( auto& a )->std::string {return a.get_string(); }, var );
+			return std::visit( []( auto& a )->std::string {return a.get_string(); }, var_ );
 		}
-	private:
-		std::variant<Point, Rectangle, Circle, Triangle> var;
 
+	private:
+		std::variant<Point, Rectangle, Circle, Triangle> var_;
 	};
 
+} // semi_dynamic namespace
 
-}
+// Gets vector of strings, which every element is a shape description,
+//	and polymorphism mechanism, which can be 0 for dynamic polymorphism, and 1 for semy-dynamic polymorphism.
+// For dynamic polymorphism solution implemented in `dynamic` namespace,
+//  with smart pointers and virtual functions.
+// For semi-dynamic polymorphism solution implemented in `semi_dynamic` namespace,
+//  with std::variant and std::visit.
+// Returns already sorted shape's string representation or error message.
+std::string construct( std::vector<std::string>, int );
 
+// `in_shapes_str` contains all shapes descriptions, and all of them ends with new line symbol
+// `polymorphism_mechanism` explained above
+std::string sort_shape_areas( const std::string&, int );
