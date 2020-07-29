@@ -274,8 +274,8 @@ namespace dynamic {
 			y3_ = temp.y3;
 		}
 
-		// if all abscissas or ordinates are on the same line, throws exception
-		if ( ( x1_ == x2_ && x2_ == x3_ ) || ( y1_ == y2_ && y2_ == y3_ ) )
+		// if all three corners are on the same line, throws exception
+		if ( ( x3_ - x1_ ) * ( y2_ - y1_ ) == ( y3_ - y1_ ) * ( x2_ - x1_ ) )
 			throw std::invalid_argument( "Invalid Triangle shape\n" );
 
 		calculate_area();
@@ -554,7 +554,7 @@ std::string construct( std::vector<std::string> shapes_description, int polymorp
 	else return "Unsupported polymorphism_mechanism value " + std::to_string( polymorphism_mechanism ) + '\n';
 }
 
-std::string sort_shape_areas( const std::string& in_shapes_str, int polymorphism_mechanism ){
+std::string sort_shape_areas( const std::string& in_shapes_str, int polymorphism_mechanism ) {
 
 	// for all shapes descriptions
 	std::vector<std::string> shape_description;
@@ -571,10 +571,10 @@ std::string sort_shape_areas( const std::string& in_shapes_str, int polymorphism
 
 		auto shape = in_shapes_str.substr( begin, ( end - begin ) );
 		// triming string
-		auto begin = shape.find_first_not_of( ' ' );
-		auto end = shape.find_last_not_of( ' ' );
+		auto first = shape.find_first_not_of( ' ' );
+		auto last = shape.find_last_not_of( ' ' );
 
-		shape_description.push_back( shape.substr( begin, end + 1 ) );
+		shape_description.push_back( shape.substr( first, last + 1 ) );
 
 		begin = end + 1;
 	}
