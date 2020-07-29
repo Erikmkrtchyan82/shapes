@@ -2,6 +2,8 @@
 #include <string>
 #include "shape.h"
 
+
+// for testing
 std::string generate() {
 	std::string text {};
 
